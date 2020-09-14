@@ -1,0 +1,62 @@
+import { Story, Meta } from '@storybook/addon-docs/blocks';
+import { FluidLoader } from '../fluidRendering/fluidLoader';
+import { Clicker, ClickerContainerFactory } from '../fluidObjects/clicker/clicker';
+
+<Meta title="React Demos/Clicker" parameters={{ defaultSrcFile: './src/fluidObjects/clicker/clicker.tsx'}} />
+
+# Clicker Demo
+
+This example demonstrates a clicker Fluid object used in real-time collaboration. The Fluid object
+uses the `SharedCounter` DDS located in the `@fluidframework/counter` package to keep track of clicks
+made by different users. `SharedCounter` allows whole numbers to be incremented.
+
+<a href="https://fluidframework.com/docs/concepts/dds/" target="_blank">Distributed data structures</a> (DDSes) used include:
+
+* <a href="https://fluidframework.com/apis/counter/sharedcounter/" target="_blank">SharedCounter</a>
+
+<Story name="Demo">
+  <FluidLoader factory={ClickerContainerFactory} title={Clicker.DataObjectName}></FluidLoader>
+</Story>
+
+<br /><br />
+
+### Code Highlights
+
+Here's a few highlights of how SharedCounter is used in this example. Click the **Source** tab above to view all of the code.
+
+```typescript
+// clicker.tsx
+// Define SharedCounter property
+private _counter: SharedCounter | undefined;
+
+...
+
+// Creating DDSes
+protected async initializingFirstTime() {
+    const counter = SharedCounter.create(this.runtime);
+    this.root.set(counterKey, counter.handle);
+}
+
+...
+
+// Accessing DDSes
+const counterHandle = this.root.get<IFluidHandle<SharedCounter>>(counterKey);
+this._counter = await counterHandle.get();
+
+...
+
+// Changing DDSes
+<button style={{fontSize: 20}} onClick={() => { this.props.counter.increment(1); }}>+</button>
+
+...
+
+// Receiving Change Event on DDSes 
+this.props.counter.on("incremented", (incrementValue: number, currentValue: number) => {
+    this.setState({ value: currentValue });
+});
+
+```
+
+### Additional Resources
+
+* <a href="https://github.com/microsoft/FluidFramework/tree/main/examples/data-objects/clicker" target="_blank">Clicker Repository</a>

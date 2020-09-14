@@ -1,0 +1,64 @@
+import { Story, Meta } from '@storybook/addon-docs/blocks';
+import { FluidLoader } from '../fluidRendering/fluidLoader';
+import { FluidDraftJsObject, FluidDraftJsContainer, FluidDraftJsView } from "../fluidObjects/draft-js";
+
+<Meta title="React Demos/Draft-JS" parameters={{ defaultSrcFile: './src/fluidObjects/draft-js/fluid-object/FluidDraftJs.tsx'}} />
+
+# Draft-JS
+
+This example demonstrates integrating Fluid into draft-js to provide real-time collaboration
+between multiple rich-text editors. 
+
+<a href="https://fluidframework.com/docs/concepts/dds/" target="_blank">Distributed data structures</a> (DDSes) used include:
+
+* <a href="https://fluidframework.com/apis/map/sharedmap/" target="_blank">SharedMap</a>
+* <a href="https://fluidframework.com/apis/sequence/sharedstring/" target="_blank">SharedString</a>
+
+<Story name="Demo">
+  <FluidLoader factory={FluidDraftJsContainer} title={FluidDraftJsObject.Name} view={FluidDraftJsView} viewType="react"></FluidLoader>
+</Story>
+
+<br /><br />
+
+### Code Highlights
+
+Here's a few highlights of how SharedString is used in this example. Click the **Source** tab above to view all of the code.
+
+```typescript
+// fluid-object/FluidDraftJs.tsx
+// Define SharedString property
+public text: SharedString | undefined;
+
+...
+
+// Creating DDSes
+const text = SharedString.create(this.runtime);
+insertBlockStart(text, 0);
+text.insertText(text.getLength(), "starting text");
+this.root.set("text", text.handle);
+
+...
+
+// Accessing DDSes - SharedString is passed to Fluid Editor React Component
+<FluidEditor
+    sharedString={props.model.text}
+/>
+
+// Changing DDSes
+this.props.sharedString.insertText(start, insertedText, styleProp);
+this.props.sharedString.replaceText(start, end, insertedText, styleProp);
+
+...
+
+// Receiving Change Event on DDSes - view/FluidEditor.tsx
+this.props.sharedString.on("sequenceDelta", (event: SequenceDeltaEvent) => {
+...
+    const updateSelectionRange = (textRange: TextRange) => updateTextRange(event.ranges, textRange);
+    this.updateEditorState(updateSelectionRange);
+...
+}
+```
+
+### Additional Resources
+
+* <a href="https://github.com/microsoft/FluidExamples" target="_blank">draft-js Repository</a>

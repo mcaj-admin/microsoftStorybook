@@ -1,0 +1,69 @@
+import { Story, Meta } from '@storybook/addon-docs/blocks';
+import { FluidLoader } from '../fluidRendering/fluidLoader';
+import { DiceRoller } from '../fluidObjects/diceRoller/DiceRoller';
+import { DiceRollerContainer } from '../fluidObjects/diceRoller/DiceRollerContainer';
+import { DiceRollerView } from '../fluidObjects/diceRoller/DiceRollerView';
+
+<Meta title="React Demos/Dice Roller" parameters={{ defaultSrcFile: './src/fluidObjects/diceRoller/DiceRoller.ts'}} />
+
+# Dice Roller
+
+This example demonstrates a dice roller Fluid object. It allows multiple
+users to roll a die in real-time and show the result to all collaborators. This example uses
+TypeScript and React to render the output. Another example that uses vanilla JavaScript is also available. 
+
+<a href="https://fluidframework.com/docs/concepts/dds/" target="_blank">Distributed data structures</a> (DDSes) used include:
+
+* <a href="https://fluidframework.com/apis/map/shareddirectory/" target="_blank">SharedDirectory</a>
+
+<Story name="Demo">
+  <FluidLoader factory={DiceRollerContainer} title={DiceRoller.DataObjectName} view={DiceRollerView} viewType="react"></FluidLoader>
+</Story>
+
+<br /><br />
+
+### Code Highlights
+
+Here are a few highlights of how SharedMap is used in this example. Click the **Source** tab above to 
+view all of the code.
+
+```typescript
+/* 
+ * diceRoller/DiceRoller.ts
+ * This example uses the DataObject's `root` property which is a SharedDirectory DDS
+ * The `diceValueKey` property below is used to get/set values on the SharedDirectory
+ */
+const diceValueKey = "diceValueKey";
+
+...
+
+// Accessing and using SharedDirectory
+protected async initializingFirstTime() {
+    this.root.set(diceValueKey, 1);
+}
+
+public get value(): number {
+    return this.root.get(diceValueKey);
+}
+
+public readonly roll = () => {
+    const rollValue = Math.floor(Math.random() * 6) + 1;
+    this.root.set(diceValueKey, rollValue);
+};
+
+...
+
+// Handling DDS changes
+protected async hasInitialized() {
+    this.root.on("valueChanged", (changed: IValueChanged) => {
+        if (changed.key === diceValueKey) {
+            this.emit("diceRolled");
+        }
+    });
+}
+```
+
+### Additional Resources
+
+* <a href="https://fluidframework.com/docs/get-started/quick-start/" target="_blank">Dice Roller Quick Start</a>
+* <a href="https://github.com/microsoft/FluidFramework/tree/main/examples/data-objects/diceroller" target="_blank">Dice Roller Repository</a>

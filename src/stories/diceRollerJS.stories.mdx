@@ -1,0 +1,66 @@
+import { Story, Meta } from '@storybook/addon-docs/blocks';
+import { FluidLoader } from '../fluidRendering/fluidLoader';
+import { DiceRoller } from '../fluidObjects/diceRollerJS/DiceRoller';
+import { DiceRollerContainer } from '../fluidObjects/diceRollerJS/DiceRollerContainer';
+import { DiceRollerView } from '../fluidObjects/diceRollerJS/DiceRollerView';
+
+<Meta title="JS Demos/Dice Roller JS" parameters={{ defaultSrcFile: './src/fluidObjects/diceRollerJS/DiceRoller.js'}} />
+
+# Dice Roller JS
+
+This example demonstrates a dice roller Fluid object. It allows multiple
+users to roll a die in real-time and show the result to all collaborators. The example 
+uses JavaScript and the DOM to render the output.
+
+<a href="https://fluidframework.com/docs/concepts/dds/" target="_blank">Distributed data structures</a> (DDSes) used include:
+
+* <a href="https://fluidframework.com/apis/map/shareddirectory/" target="_blank">SharedDirectory</a>
+
+<Story name="Demo">
+    <FluidLoader factory={DiceRollerContainer} title={DiceRoller.DataObjectName} view={DiceRollerView} viewType="js"></FluidLoader>
+</Story>
+
+<br /><br />
+
+### Code Highlights
+
+Here are a few highlights of how SharedMap is used in this example. Click the **Source** tab above to 
+view all of the code.
+
+```typescript
+/* 
+ * diceRoller/DiceRoller.js
+ * This example uses the DataObject's `root` property which is a SharedDirectory DDS
+ * The `diceValueKey` property below is used to get/set values on the SharedDirectory
+ */
+const diceValueKey = "diceValueKey";
+
+...
+
+// Accessing and using SharedDirectory
+protected async initializingFirstTime() {
+    this.root.set(diceValueKey, 1);
+}
+
+public get value(): number {
+    return this.root.get(diceValueKey);
+}
+
+public readonly roll = () => {
+    const rollValue = Math.floor(Math.random() * 6) + 1;
+    this.root.set(diceValueKey, rollValue);
+};
+
+...
+
+// Handling DDS changes
+async hasInitialized() {
+    this.root.on("valueChanged", (changed) => {
+        if (changed.key === diceValueKey) {
+            this.emit("diceRolled");
+        }
+    });
+}
+
+
+```

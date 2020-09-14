@@ -1,0 +1,105 @@
+import { Story, Meta } from '@storybook/addon-docs/blocks';
+import { FluidLoader } from '../fluidRendering/fluidLoader';
+import { Badge, BadgeContainerFactory } from '../fluidObjects/badge/badgeModel';
+
+<Meta title="React Demos/Badge" parameters={{ defaultSrcFile: './src/fluidObjects/badge/badgeModel.tsx'}} />
+
+# Badge Demo
+
+This example demonstrates a badge data object that can be used to collaboratively update the status of a document. It allows multiple
+users to collaborate in real-time on the status of a document. Select an option from the drop-down
+and you'll see that it is passed in real-time to the other collaborator.
+
+<a href="https://fluidframework.com/docs/concepts/dds/" target="_blank">Distributed data structures</a> (DDSes) used include:
+
+* <a href="https://fluidframework.com/apis/map/sharedmap/" target="_blank">SharedMap</a>
+* <a href="https://fluidframework.com/apis/cell/sharedcell/" target="_blank">SharedCell</a>
+* <a href="https://fluidframework.com/apis/sequence/sharedobjectsequence/" target="_blank">SharedObjectSequence</a>
+
+<Story name="Demo">
+  <FluidLoader factory={BadgeContainerFactory} title={Badge.factory.type}></FluidLoader>
+</Story>
+
+<br /><br />
+
+### Code Highlights
+
+Here are a few highlights of how SharedMap, SharedCell, and SharedObjectSequence are used in this example. Click the **Source** tab above to 
+view all of the code.
+
+```typescript
+// badge/badgeModel.ts
+
+// Define DDS properties
+currentCell!: SharedCell;
+optionsMap!: SharedMap;
+historySequence!: SharedObjectSequence<IBadgeHistory>;
+
+...
+
+// Creating DDSes
+protected async initializingFirstTime() {
+    // Create a cell to represent the Badge's current state
+    const current = SharedCell.create(this.runtime);
+    this.root.set(this.currentId, current.handle);
+
+    // Create a map to represent the options for the Badge
+    const options = SharedMap.create(this.runtime);
+    this.root.set(this.optionsId, options.handle);
+
+    // Create a sequence to store the badge's history
+    const badgeHistory = SharedObjectSequence.create<IBadgeHistory>(this.runtime);
+    this.root.set(this.historyId, badgeHistory.handle);
+}
+
+...
+
+// Accessing DDSes
+protected async hasInitialized() {
+    [ this.currentCell, this.optionsMap, this.historySequence ] = await Promise.all([
+        this.root.get<IFluidHandle<SharedCell>>(this.currentId).get(),
+        this.root.get<IFluidHandle<SharedMap>>(this.optionsId).get(),
+        this.root.get<IFluidHandle<SharedObjectSequence<IBadgeHistory>>>(this.historyId).get(),
+    ]);
+}
+
+...
+
+// Using DDSes - badge/badgeClient.tsx
+const changeSelectedOption = (newItem: IBadgeType): void => {
+    if (newItem.key !== model.currentCell.get().key) {
+        // SharedObjectSequence DDS
+        const len = model.historySequence.getItemCount();
+        model.historySequence.insert(len, [
+            {
+                value: newItem,
+                timestamp: new Date(),
+            },
+        ]);
+        // SharedCell DDS
+        model.currentCell.set(newItem);
+    }
+};
+
+const getOptions = () => {
+    // SharedMap DDS
+    // Spread iterable out into an array
+    return [...model.optionsMap.values()];
+};
+
+...
+
+// Handling DDS changes
+React.useEffect(() => {
+    // Watch for Fluid data updates and update React state
+    model.currentCell.on("valueChanged", () => {
+        setSelectedOption(getSelectedOptionKey());
+        setHistoryItems(getHistoryItems());
+    });
+}, [getHistoryItems, getSelectedOptionKey, model.currentCell]);
+
+```
+
+### Additional Resources
+
+* <a href="https://github.com/microsoft/FluidFramework/tree/main/examples/data-objects/badge" target="_blank">Badge Repository</a>

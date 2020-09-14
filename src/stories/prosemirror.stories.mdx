@@ -1,0 +1,55 @@
+import { Story, Meta } from '@storybook/addon-docs/blocks';
+import { FluidLoader } from '../fluidRendering/fluidLoader';
+import { fluidExport } from '../fluidObjects/prosemirror/index';
+
+<Meta title="React Demos/ProseMirror" parameters={{ defaultSrcFile: './src/fluidObjects/prosemirror/prosemirror.ts'}} />
+
+# ProseMirror
+
+This example demonstrates integrating Fluid objects into ProseMirror to provide real-time collaboration
+between multiple rich-text editors.
+
+<a href="https://fluidframework.com/docs/concepts/dds/" target="_blank">Distributed data structures</a> (DDSes) used include:
+
+* <a href="https://fluidframework.com/apis/map/sharedmap/" target="_blank">SharedMap</a>
+* <a href="https://fluidframework.com/apis/sequence/sharedstring/" target="_blank">SharedString</a>
+
+<Story name="Demo">
+  <FluidLoader factory={fluidExport} title={fluidExport.defaultDataObjectName}></FluidLoader>
+</Story>
+
+<br /><br />
+
+### Code Highlights
+
+Here are a few highlights of how SharedMap and SharedString are used in this example. Click the **Source** tab above to 
+view all of the code.
+
+```typescript
+// prosemirror/prosemirror.ts
+// Define DDS properties
+public text!: SharedString;
+private root!: ISharedMap;
+
+...
+
+// Creating DDSes
+this.root = SharedMap.create(this.runtime, "root");
+const text = SharedString.create(this.runtime);
+this.root.set("text", text.handle);
+
+...
+
+// Accessing DDSes
+this.root = await this.runtime.getChannel("root") as ISharedMap;
+this.text = await this.root.get<IFluidHandle<SharedString>>("text").get();
+
+...
+
+// Using DDSes
+text.insertText(1, "Hello, world!");
+```
+
+### Additional Resources
+
+* <a href="https://github.com/microsoft/FluidFramework/tree/main/examples/data-objects/prosemirror" target="_blank">ProseMirror Repository</a>

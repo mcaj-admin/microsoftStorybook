@@ -1,0 +1,56 @@
+import { Story, Meta } from '@storybook/addon-docs/blocks';
+import { FluidLoader } from '../fluidRendering/fluidLoader';
+import { fluidExport, ImageGalleryInstantiationFactory } from '../fluidObjects/image-gallery/image-gallery';
+
+<Meta title="React Demos/Image Gallery" parameters={{ defaultSrcFile: './src/fluidObjects/image-gallery/image-gallery.tsx'}} />
+
+# Image Gallery
+
+This example demonstrates using Fluid objects to provide real-time collaboration
+between multiple image gallery components. As a user selects an image, other connected
+clients will automatically be updated and stay in sync.
+
+<a href="https://fluidframework.com/docs/concepts/dds/" target="_blank">Distributed data structures</a> (DDSes) used include:
+
+* <a href="https://fluidframework.com/apis/map/shareddirectory/" target="_blank">SharedDirectory</a>
+
+<Story name="Demo">
+  <FluidLoader factory={fluidExport} title={ImageGalleryInstantiationFactory.type}></FluidLoader>
+</Story>
+
+<br /><br />
+
+### Code Highlights
+
+Here's how the default Root directory is used in this example. Click the **Source** tab above to view all of the code.
+
+```typescript
+// image-gallery.tsx
+// Root DDS creation is done by DataObject class
+export class ImageGalleryComponent extends DataObject implements IFluidHTMLView
+
+...
+
+// Accessing DDSes
+this.root.get("position");
+
+...
+
+// Changing DDSes
+onSlide = (index: number) => {
+    this.root.set("position", index);
+};
+
+...
+
+// Receiving Change Event on DDSes 
+this.root.on("valueChanged", (_, local) => {
+    const position = this.root.get<number>("position");
+    ...
+}
+
+```
+
+### Additional Resources
+
+* <a href="https://github.com/microsoft/FluidFramework/tree/main/examples/data-objects/image-gallery" target="_blank">Image Gallery Repository</a>

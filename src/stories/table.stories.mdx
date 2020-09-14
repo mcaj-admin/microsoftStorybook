@@ -1,0 +1,70 @@
+import { Story, Meta } from '@storybook/addon-docs/blocks';
+import { FluidLoader } from '../fluidRendering/fluidLoader';
+import { FluidTable, TableContainerFactory } from '../fluidObjects/table/TableModel';
+
+<Meta title="React Demos/Table" parameters={{ defaultSrcFile: './src/fluidObjects/table/TableModel.tsx'}} />
+
+# Table
+
+This example demonstrates real-time collaboration between multiple tables. Users can collaborate on adding new rows, 
+renaming columns, and updating values in the table.
+
+<a href="https://fluidframework.com/docs/concepts/dds/" target="_blank">Distributed data structures</a> (DDSes) used include:
+
+* <a href="https://fluidframework.com/apis/matrix/sharedmatrix/" target="_blank">SharedMatrix</a>
+
+
+<Story name="Demo">
+  <FluidLoader factory={TableContainerFactory} title={FluidTable.FluidObjectName}></FluidLoader>
+</Story>
+
+<br /><br />
+
+### Code Highlights
+
+Here's a few highlights of how SharedMatrix is used in this example. Click the **Source** tab above to view all of the code.
+Note: The SharedMatrix has a different eventing model than the other DDSes. .OpenMatrix() calls functions instead of creating events.
+```typescript
+// TableModel.tsx
+// Define SharedMatrix property
+private _matrixData!: SharedMatrix<string>;
+
+...
+
+// Creating DDSes
+const matrixDDSObject = SharedMatrix.create(this.runtime);
+
+...
+
+// Accessing DDSes
+const matrixDDSObjectHandle = this.root.get<IFluidHandle<SharedMatrix<string>>>(matrixDataStoreKey);
+this._matrixData = await matrixDDSObjectHandle.get();
+
+...
+
+// Changing DDSes
+this._matrixData.setCell(row, col, value);
+this._matrixData.insertCols(colStart, count);
+this._matrixData.insertRows(rowStart, count);
+
+...
+
+// Receiving Change Event on DDSes 
+this._matrixData.openMatrix(this);
+public rowsChanged(rowStart: number, removedCount: number, insertedCount: number, producer: IMatrixProducer<string>) {
+    this.emit("rowsChanged", this.rows);
+}
+
+public colsChanged(colStart: number, removedCount: number, insertedCount: number, producer: IMatrixProducer<string>) {
+    this.emit("colsChanged", this.cols);
+}
+
+public cellsChanged(rowStart: number, colStart: number, rowCount: number, colCount: number, producer: IMatrixProducer<string>) {
+    this.emit("cellChanged", rowStart, colStart, this.getCell(rowStart, colStart));
+}
+
+```
+
+### Additional Resources
+
+* <a href="https://github.com/microsoft/FluidFramework/tree/main/examples/data-objects/clicker" target="_blank">Clicker Repository</a>
