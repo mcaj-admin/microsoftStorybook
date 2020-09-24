@@ -80,7 +80,7 @@
     "react-image-gallery": "^1.0.8",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
-    "react-syntax-highlighter": "^13.3.1",
+    "react-syntax-highlighter": "^13.5.3",
     "sudokus": "^1.0.2",
     "uuid": "^8.3.0"
   },
