@@ -82,7 +82,7 @@
     "react-scripts": "3.4.3",
     "react-syntax-highlighter": "^13.3.1",
     "sudokus": "^1.0.2",
-    "uuid": "^8.3.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@fluidframework/build-common": "^0.19.2-2664",
